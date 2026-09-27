@@ -1,0 +1,29 @@
+# ==============================================================================
+# Patent Prior-Art Research Agent — Python dependencies
+# ==============================================================================
+
+# --- Web framework ---
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+
+# --- MCP (Model Context Protocol) ---
+fastmcp==2.10
+
+# --- HTTP clients ---
+httpx==0.28.1
+
+# --- LLM (OpenAI-compatible Groq endpoint) ---
+openai==1.59.3
+
+# --- Database ---
+sqlalchemy[asyncio]==2.0.45
+asyncpg==0.30.0
+psycopg2-binary==2.9.13
+
+# --- Data validation ---
+pydantic==2.11.7
+pydantic-settings==2.15.0
+
+# --- Utilities ---
+python-dotenv==1.1.0
+patent-client-agents==0.29.0
