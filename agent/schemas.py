@@ -63,6 +63,8 @@ class PatentFinding(BaseModel):
     cpc_codes: List[str]
     filing_date: Optional[str]
     grant_date: Optional[str]
+    publication_date: Optional[str] = None
+    source: Optional[str] = None
     verdict: str = Field(
         ..., description="ACCEPTED (relevant prior art) or REJECTED (not relevant)."
     )

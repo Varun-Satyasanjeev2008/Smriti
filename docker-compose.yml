@@ -93,10 +93,18 @@ services:
       # Hindsight memory API
       HINDSIGHT_URL: ${HINDSIGHT_URL:-http://hindsight:8888}
 
+      # Optional, verified local development corpus maintained by Patent Data_Search
+      PATENT_DATA_SEARCH_PATH: /opt/patent_data_search
+
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - "8000:8000"
+    volumes:
+      # Local patent corpus (Patent-Data_Search project).
+      # The corpus lives at ./Patent-Data_Search/patent_search.py relative
+      # to this docker-compose.yml file.
+      - "./Patent-Data_Search:/opt/patent_data_search:ro"
     depends_on:
       - db
       - hindsight

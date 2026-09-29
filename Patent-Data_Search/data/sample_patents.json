@@ -1,0 +1,35 @@
+[
+  {
+    "patent_id": "US8927131B2",
+    "title": "Battery thermal interfaces with microencapsulated phase change materials for enhanced heat exchange properties",
+    "abstract": "Thermal interfaces containing microencapsulated phase change materials (PCMs) to improve heat exchange and regulate the temperature of battery cells.",
+    "claims": null,
+    "inventors": [],
+    "assignee": "GM Global Technology Operations LLC",
+    "publication_date": "2015-01-06",
+    "cpc": [],
+    "source": "Google Patents Search"
+  },
+  {
+    "patent_id": "US6468689B1",
+    "title": "Thermal management of battery systems",
+    "abstract": "A method of operating a power supply system including discharging at least one cell element of a battery module to produce a quantity of power and a quantity of heat. Absorbing at least a portion of the heat in a phase change material (PCM) in thermal contact with the discharging cell element.",
+    "claims": null,
+    "inventors": ["Said Al-Hallaj", "J. Robert Selman"],
+    "assignee": "Illinois Institute of Technology",
+    "publication_date": "2002-10-22",
+    "cpc": [],
+    "source": "Google Patents Search"
+  },
+  {
+    "patent_id": "US9327577B2",
+    "title": "Vehicle heat pump system and method utilizing thermal storage",
+    "abstract": "Heat pump systems and thermal storage media, which can include phase change materials, for use in vehicles with rechargeable energy storage systems.",
+    "claims": null,
+    "inventors": ["Paul S. Lombardo", "Lawrence P. Ziehr", "Brian P."],
+    "assignee": "GM Global Technology Operations LLC",
+    "publication_date": "2016-05-03",
+    "cpc": [],
+    "source": "Google Patents Search"
+  }
+]

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smriti — Autonomous Patent Agent with Hindsight Memory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <div class="logo-box">
+        <!-- Custom SVG Logo: Abstract Brain + Document / Search Element -->
+        <svg class="brand-svg" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Outer Tile -->
+          <rect width="44" height="44" rx="12" fill="#1D4ED8"/>
+
+          <!-- Background Document Silhouette with Folded Corner -->
+          <path d="M12 9C12 7.89543 12.8954 7 14 7H24L31 14V33C31 34.1046 30.1046 35 29 35H14C12.8954 35 12 34.1046 12 33V9Z"
+                fill="#FFFFFF" fill-opacity="0.95"/>
+          <path d="M24 7V14H31" fill="#DBEAFE"/>
+
+          <!-- Left Brain Hemisphere: Synaptic Neural Lobes -->
+          <!-- Upper Cerebral Lobe -->
+          <path d="M21 12C16.5 12 14.2 14.5 14.2 18C14.2 20.2 15.8 21.6 17.5 22.2"
+                stroke="#1D4ED8" stroke-width="1.8" stroke-linecap="round"/>
+          <!-- Lower Cerebral Lobe -->
+          <path d="M17.5 22.2C15.2 22.8 13.8 24.6 13.8 27.2C13.8 30.2 16.2 31.8 21 31.8"
+                stroke="#1D4ED8" stroke-width="1.8" stroke-linecap="round"/>
+          <!-- Internal Cortex Pathway -->
+          <path d="M18.2 16.5C16.8 17.6 16.8 20 18.4 21C19.8 22 19.8 24.5 18.4 25.5"
+                stroke="#6366F1" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="1 2.2"/>
+
+          <!-- Right Hemisphere: Integrated Search Element -->
+          <!-- Search Optic Lens Ring -->
+          <circle cx="24" cy="22" r="5.2" stroke="#2563EB" stroke-width="1.8"/>
+          <!-- Search Handle Extending Dynamically -->
+          <path d="M27.8 25.8L32.8 30.8" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round"/>
+
+          <!-- Neural Synapse Bridges Connecting Memory to Search -->
+          <line x1="17.5" y1="17" x2="20.5" y2="19.5" stroke="#2563EB" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="17.5" y1="27" x2="20.5" y2="24.5" stroke="#6366F1" stroke-width="1.3" stroke-linecap="round"/>
+
+          <!-- Glowing Synaptic Memory Nodes -->
+          <circle cx="14.2" cy="18" r="1.3" fill="#1D4ED8"/>
+          <circle cx="13.8" cy="27.2" r="1.3" fill="#6366F1"/>
+          <circle cx="21" cy="12" r="1.4" fill="#1D4ED8"/>
+          <circle cx="21" cy="31.8" r="1.4" fill="#2563EB"/>
+          <circle cx="24" cy="22" r="1.5" fill="#1D4ED8"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title-wrap">
+          <h1 class="nav-title">Smriti</h1>
+          <span class="memory-pill">Powered by Hindsight</span>
+        </div>
+        <span class="nav-subtitle">Never start patent prior-art research from zero</span>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Mode Toggle: Live Backend vs Mock Mode -->
+      <div class="mode-toggle-wrap">
+        <label for="mockToggle" class="toggle-label" title="Switch between live backend and simulated demo data">
+          <input type="checkbox" id="mockToggle">
+          <span class="toggle-slider"></span>
+          <span class="toggle-text" id="toggleText">Mock Mode: Off</span>
+        </label>
+      </div>
+
+      <!-- Backend Health Indicator -->
+      <div class="health-badge" id="healthBadge" title="Backend connection status">
+        <span class="status-dot dot-checking" id="statusDot"></span>
+        <span id="statusText">Checking Backend...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    <!-- View Switcher Tabs -->
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="researchTab" role="tab" aria-selected="true">
+        🔍 Prior-Art Research
+      </button>
+      <button class="tab-btn" data-tab="reflectTab" role="tab" aria-selected="false">
+        🧠 Hindsight Memory & Insights
+      </button>
+      <button class="tab-btn" data-tab="logsTab" role="tab" aria-selected="false">
+        📊 Audit Trail
+      </button>
+    </nav>
+
+    <!-- TAB 1: RESEARCH -->
+    <section id="researchTab" class="tab-content active">
+      <!-- Value Proposition / Mission Notice -->
+      <div class="hindsight-banner">
+        <div class="hindsight-banner-icon">💡</div>
+        <div class="hindsight-banner-text">
+          <strong>Persistent Memory Active:</strong> Smriti queries <strong>Hindsight</strong> first to recall past searches, past rejections, and previous reasoning before searching public patent records. Past verdicts are retained automatically.
+        </div>
+      </div>
+
+      <!-- Search Panel Card -->
+      <div class="card search-card">
+        <h2 class="card-title">Investigate New Prior-Art</h2>
+        <p class="card-desc">
+          Enter an invention concept, claim summary, or technical query. Smriti will check past retained research, retrieve candidate patents, and provide LLM prior-art evaluations.
+        </p>
+
+        <form id="researchForm" class="research-form">
+          <div class="form-group full-width">
+            <label for="queryInput">Invention Description / Claim Language <span class="required">*</span></label>
+            <textarea
+              id="queryInput"
+              rows="3"
+              required
+              minlength="5"
+              placeholder="e.g. Deep convolutional neural network for real-time visual classification using residual bypass skip connections..."
+            ></textarea>
+          </div>
+
+          <!-- Advanced Filters Accordion Toggle -->
+          <div class="filters-toggle-wrap full-width">
+            <button type="button" id="toggleFiltersBtn" class="btn-link">
+              ⚙️ Optional Classification & Date Filters <span id="filterArrow">▼</span>
+            </button>
+          </div>
+
+          <!-- Collapsible Filters -->
+          <div id="advancedFilters" class="filters-grid full-width" style="display: none;">
+            <div class="form-group">
+              <label for="cpcInput">CPC Classification Code</label>
+              <input type="text" id="cpcInput" placeholder="e.g. G06N3/04">
+              <small class="helper-text">Cooperative Patent Classification filter</small>
+            </div>
+
+            <div class="form-group">
+              <label for="maxPatentsInput">Max Candidate Patents: <span id="maxPatentsVal">5</span></label>
+              <input type="range" id="maxPatentsInput" min="1" max="20" value="5">
+              <small class="helper-text">Number of candidate patents to inspect (1 - 20)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="dateFromInput">Grant Date (From)</label>
+              <input type="date" id="dateFromInput">
+            </div>
+
+            <div class="form-group">
+              <label for="dateToInput">Grant Date (To)</label>
+              <input type="date" id="dateToInput">
+            </div>
+          </div>
+
+          <div class="form-actions full-width">
+            <button type="submit" id="submitBtn" class="btn btn-primary">
+              <span class="btn-text">Execute Research with Memory</span>
+              <span class="spinner" style="display: none;"></span>
+            </button>
+            <button type="button" id="exampleBtn" class="btn btn-secondary">
+              Load Example Query
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="card loading-card" style="display: none;">
+        <div class="loading-spinner"></div>
+        <h3 id="loadingTitle">Consulting Memory & Searching Public Patent Records...</h3>
+        <p class="loading-sub" id="loadingSub">1. Checking Hindsight memory → 2. Searching Google Patents and the local corpus → 3. LLM Reasoning → 4. Retaining conclusions</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="errorState" class="card error-card" style="display: none;">
+        <div class="error-icon">⚠️</div>
+        <div class="error-content">
+          <h3 id="errorTitle">Research Failed</h3>
+          <p id="errorMsg"></p>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="resultsSection" style="display: none;">
+        <!-- Summary Stats Banner -->
+        <div class="summary-banner" id="summaryBanner">
+          <div class="summary-info">
+            <span class="summary-badge">Research Outcome</span>
+            <p id="summaryText"></p>
+          </div>
+          <div class="stat-pills" id="statPills"></div>
+        </div>
+
+        <!-- Recalled Context from Hindsight Memory -->
+        <div class="card memory-card" id="recalledSection" style="display: none;">
+          <div class="memory-header" id="toggleMemoryHeader">
+            <div class="memory-title">
+              <span class="memory-pulse-dot"></span>
+              <span>Past Research Recalled from Hindsight Memory</span>
+              <span class="count-tag" id="recalledCount">0</span>
+            </div>
+            <span class="memory-tagline">Previous reasoning reused (saved redundant search time)</span>
+          </div>
+          <div class="memory-body" id="memoryList"></div>
+        </div>
+
+        <!-- Evaluated Patent Findings -->
+        <div class="findings-header">
+          <h3>Evaluated Candidate Patents (<span id="findingsCount">0</span>)</h3>
+        </div>
+        <div class="findings-grid" id="findingsList"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: MEMORY REFLECTION -->
+    <section id="reflectTab" class="tab-content" style="display: none;">
+      <div class="card">
+        <h2 class="card-title">Hindsight Cross-Research Reflection</h2>
+        <p class="card-desc">
+          Smriti synthesises patterns across all accumulated patent investigations. Surface recurring prior-art clusters, common reasons for claim rejection, and high-frequency CPC classes.
+        </p>
+
+        <div class="form-group full-width">
+          <label for="reflectQueryInput">Focus Inquiry (Optional)</label>
+          <input
+            type="text"
+            id="reflectQueryInput"
+            placeholder="e.g. Which CPC classes are most commonly accepted as prior art for neural networks?"
+          >
+        </div>
+
+        <div class="form-actions">
+          <button id="runReflectBtn" class="btn btn-primary">
+            <span class="btn-text">Synthesise Insights</span>
+            <span class="spinner" style="display: none;"></span>
+          </button>
+        </div>
+
+        <div id="reflectResult" class="reflection-box" style="display: none;">
+          <div class="reflection-header">
+            <span>🧠 Accumulated Research Intelligence</span>
+          </div>
+          <div class="reflection-content" id="reflectionContent"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: AUDIT TRAIL -->
+    <section id="logsTab" class="tab-content" style="display: none;">
+      <div class="card">
+        <div class="logs-header">
+          <div>
+            <h2 class="card-title">Research Audit Log</h2>
+            <p class="card-desc">Persistent history of prior queries, patents searched, verdicts reached, and latency.</p>
+          </div>
+          <button id="refreshLogsBtn" class="btn btn-secondary">🔄 Refresh Log</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Invention Query</th>
+                <th>CPC Filter</th>
+                <th>Evaluated</th>
+                <th>Relevant</th>
+                <th>Irrelevant</th>
+                <th>Memory Hits</th>
+                <th>Latency</th>
+              </tr>
+            </thead>
+            <tbody id="logsTableBody">
+              <tr>
+                <td colspan="8" class="text-center">No logs loaded yet. Click Refresh to load.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <strong>Smriti</strong> — Patent Prior-Art Research Agent with Persistent Hindsight Memory
+      <span class="footer-sub">Google Patents + local development corpus • Groq LLM Reasoning • Hindsight Memory Bank (`patent-prior-art`)</span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

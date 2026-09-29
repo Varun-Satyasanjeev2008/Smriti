@@ -1,7 +1,7 @@
 """
 Patent Search MCP Server.
 
-Exposes two MCP tools backed by the PatentsView API:
+Exposes two MCP tools backed by Google Patents and the optional local corpus:
   - search_patents(query, cpc_class, date_from, date_to) -> list[Patent]
   - get_patent_details(patent_id) -> Patent
 
@@ -31,13 +31,12 @@ logger = logging.getLogger(__name__)
 mcp = FastMCP(
     name="PatentSearchMCP",
     instructions=(
-        "Use this server to search USPTO patents via PatentsView. "
+        "Search public patent records using Google Patents and the configured local corpus. "
         "Tools: search_patents, get_patent_details."
     ),
 )
 
 # Module-level client — shared across all tool calls within a single process.
-# PatentsViewClient holds an httpx.AsyncClient internally.
 _client: Optional[PatentsViewClient] = None
 
 
@@ -62,7 +61,7 @@ async def search_patents(
     max_results: int = 10,
 ) -> List[Dict[str, Any]]:
     """
-    Search for patents in the USPTO PatentsView database.
+    Search public patent records and supplement the results with the local corpus.
 
     Args:
         query: Free-text search string applied to patent abstracts and titles.

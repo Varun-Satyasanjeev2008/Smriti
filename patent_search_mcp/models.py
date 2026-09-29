@@ -31,6 +31,12 @@ class Patent(BaseModel):
     grant_date: Optional[str] = Field(
         default=None, description="Patent grant date (YYYY-MM-DD)"
     )
+    publication_date: Optional[str] = Field(
+        default=None, description="Publication date when no grant date is available (YYYY-MM-DD)"
+    )
+    source: Optional[str] = Field(
+        default=None, description="Origin of the patent record"
+    )
 
     class Config:
         json_schema_extra = {

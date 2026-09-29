@@ -49,8 +49,13 @@ Assignee: {assignee}
 CPC Codes: {cpc_codes}
 Filing Date: {filing_date}
 Grant Date: {grant_date}
+Publication Date: {publication_date}
+Record Source: {source}
+Earlier Hindsight research for this exact patent (historical context):
+{prior_research}
 
 Evaluate whether this patent is relevant prior art for the research query above.
+Compare any earlier evaluation with the current query and patent evidence. Treat the earlier evaluation as context, not as a verdict to copy; explain changed conclusions when relevant.
 
 Respond with a JSON object in EXACTLY this format (no markdown fences):
 {{
@@ -96,6 +101,9 @@ class PatentRelevanceEvaluator:
         cpc_codes: Optional[list] = None,
         filing_date: Optional[str] = None,
         grant_date: Optional[str] = None,
+        publication_date: Optional[str] = None,
+        source: Optional[str] = None,
+        prior_research: str = "",
     ) -> dict:
         """
         Ask the LLM to evaluate whether the patent is relevant prior art.
@@ -119,6 +127,9 @@ class PatentRelevanceEvaluator:
             cpc_codes=", ".join(cpc_codes or []) or "N/A",
             filing_date=filing_date or "Unknown",
             grant_date=grant_date or "Unknown",
+            publication_date=publication_date or "Unknown",
+            source=source or "Unknown",
+            prior_research=prior_research[:4000] or "No prior evaluation for this patent was recalled.",
         )
 
         logger.debug(

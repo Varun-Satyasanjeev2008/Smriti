@@ -16,8 +16,8 @@ An AI backend agent that searches USPTO patents via PatentsView, evaluates prior
 │    │      (prior research?)               (:8888)        │
 │    │                                                     │
 │    ├─ 2. Patent Search MCP tool                         │
-│    │      search_patents()  ────────────► PatentsView   │
-│    │      (in-process FastMCP client)     API (USPTO)    │
+│    │      search_patents()  ────────────► Google Patents│
+│    │      (in-process FastMCP client)     + local corpus │
 │    │                                                     │
 │    ├─ 3. Groq LLM evaluate each patent                  │
 │    │      (accept / reject + reasoning)  ► Groq API     │
@@ -35,7 +35,7 @@ An AI backend agent that searches USPTO patents via PatentsView, evaluates prior
 
 | Directory | Owner | Responsibility |
 |-----------|-------|----------------|
-| `patent_search_mcp/` | Patent data team | FastMCP server wrapping PatentsView API; rate limiting |
+| `patent_search_mcp/` | Patent data team | FastMCP server combining Google Patents search and the verified local corpus |
 | `memory/` | Memory team | Hindsight REST client (recall / retain / reflect) |
 | `agent/` | Agent / backend team | Orchestration loop, LLM evaluation, FastAPI app, database |
 
@@ -44,7 +44,6 @@ An AI backend agent that searches USPTO patents via PatentsView, evaluates prior
 ## Prerequisites
 
 - [Docker Desktop](https://docs.docker.com/get-docker/) with Compose v2
-- A free [PatentsView API key](https://patentsview.org/apis/keyrequest)
 - A [Groq API key](https://console.groq.com)
 
 ---
@@ -80,10 +79,10 @@ The other variables have sensible defaults for local Docker Compose.
 docker compose up --build
 ```
 
-This starts:
+Run `docker compose` from the `Smriti` folder, with `Patent Data_Search` and `Smriti` as sibling folders in Documents. Compose mounts the local search project read-only into the agent container. This starts:
 - **db** — pgvector/pgvector:pg16 on port 5432
 - **hindsight** — ghcr.io/vectorize-io/hindsight:latest on ports 8888 / 9999
-- **agent** — FastAPI app on port 8000
+- **agent** — FastAPI app on port 8000, searching Google Patents and supplementing matches from the three-record local development corpus
 
 Wait for all health checks to pass (about 30–60 seconds on first start, since Hindsight pulls its image and initialises its embedded Postgres).
 
@@ -103,7 +102,7 @@ curl http://localhost:8888/health
 
 ### `POST /research`
 
-Run prior-art research for a given query.
+Run prior-art research for a given query. Candidate search combines live Google Patents results with matching records from `Patent Data_Search`; duplicate patent IDs are removed. The local corpus contains only three battery thermal-management records and is a development fixture, not a complete patent database.
 
 **Request body:**
 ```json
@@ -262,13 +261,13 @@ python -m patent_search_mcp.server --sse --port 8001
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `PATENTSVIEW_API_KEY` | ✅ | — | PatentsView (USPTO) API key |
 | `GROQ_API_KEY` | ✅ | — | Groq API key for agent reasoning |
 | `GROQ_MODEL` | ❌ | `openai/gpt-oss-120b` | Groq model for patent evaluation |
 | `HINDSIGHT_API_LLM_PROVIDER` | ✅ | `groq` | LLM provider for Hindsight's internal memory |
 | `HINDSIGHT_API_LLM_API_KEY` | ✅ | — | API key for Hindsight's LLM |
 | `HINDSIGHT_API_LLM_MODEL` | ❌ | `openai/gpt-oss-120b` | Model for Hindsight's memory reasoning |
 | `HINDSIGHT_URL` | ❌ | `http://hindsight:8888` | URL of the Hindsight REST API |
+| `PATENT_DATA_SEARCH_PATH` | ❌ | sibling `Patent Data_Search/Patent Data_Search` folder | Directory containing `patent_search.py` and `data/sample_patents.json`; set to `/opt/patent_data_search` in Docker Compose |
 | `APP_DATABASE_URL` | ✅ | (Docker default) | asyncpg connection string for app Postgres |
 | `POSTGRES_USER` | ❌ | `patentuser` | App Postgres username |
 | `POSTGRES_PASSWORD` | ❌ | `patentpass` | App Postgres password |
@@ -280,7 +279,7 @@ python -m patent_search_mcp.server --sse --port 8001
 
 ## Rate Limiting
 
-PatentsView allows **45 requests per minute** per API key. The rate limiter in `patent_search_mcp/throttle.py` enforces this automatically using a sliding-window token bucket. If the limit is reached, requests queue and retry automatically — no action needed.
+The local corpus supplements Google Patents results and requires no API key. Search remains keyword-based for the local records; the corpus has three records, no claims, and no CPC classifications. CPC and grant-date filters therefore exclude local records because those fields are unavailable. Publication dates remain labeled separately from grant dates.
 
 ---
 

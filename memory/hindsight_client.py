@@ -76,14 +76,25 @@ class HindsightClient:
         """
         Search Hindsight for memories related to the query.
 
-        Returns a list of memory objects as returned by Hindsight.
+        Returns a normalised list of memory dicts, each with the keys:
+          - 'content' : the memory text (mapped from Hindsight's 'text' field)
+          - 'score'   : relevance score if available (None if absent)
+          - 'metadata': dict of supplementary fields (context, document_id,
+                        type, id, mentioned_at, entities, …)
+
+        Hindsight's recall API returns each result with 'text' as the memory
+        body.  The old code used mem.get('content', '') which always returned ''
+        because Hindsight does not use a 'content' key in recall results.
+        This method normalises the raw Hindsight response so the orchestrator
+        receives a stable structure regardless of Hindsight version.
         """
         payload: Dict[str, Any] = {
             "query": query,
+            "top_k": top_k,
             "max_tokens": 4096,
             "budget": "mid",
         }
-        logger.debug("Hindsight recall: query=%r bank=%s", query, self._bank_id)
+        logger.debug("Hindsight recall: query=%r bank=%s top_k=%d", query, self._bank_id, top_k)
 
         try:
             response = await self._http.post(
@@ -91,22 +102,97 @@ class HindsightClient:
             )
             response.raise_for_status()
             data = response.json()
-            # Hindsight wraps results in a 'memories' or 'results' key
-            memories: List[Dict] = (
-                data.get("memories") or data.get("results") or []
+
+            # --- DEBUG: log raw response structure (first result only) ---
+            # Hindsight wraps results under 'results' (primary) or 'memories'
+            raw_list: List[Dict] = (
+                data.get("results")
+                or data.get("memories")
+                or []
             )
-            logger.info("Hindsight recall returned %d memories", len(memories))
-            return memories[:top_k]
+            if raw_list:
+                logger.info(
+                    "Hindsight recall raw result[0] keys=%s  sample=%r",
+                    list(raw_list[0].keys()) if raw_list else [],
+                    json.dumps(raw_list[0])[:300],
+                )
+            else:
+                logger.info(
+                    "Hindsight recall returned 0 results. Top-level keys: %s",
+                    list(data.keys()),
+                )
+
+            logger.info("Hindsight recall: %d raw result(s) received", len(raw_list))
+            return [self._normalise_memory(m) for m in raw_list[:top_k]]
+
         except httpx.HTTPStatusError as exc:
             logger.warning(
                 "Hindsight recall failed (HTTP %d): %s",
                 exc.response.status_code,
-                exc.response.text,
+                exc.response.text[:500],
             )
             return []
         except Exception as exc:
             logger.warning("Hindsight recall error: %s", exc)
             return []
+
+    @staticmethod
+    def _normalise_memory(raw: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Convert a raw Hindsight recall result into a stable dict.
+
+        Hindsight recall results use 'text' for the memory body, not 'content'.
+        This normalises the field names so the orchestrator layer only needs
+        to call mem.get('content') regardless of Hindsight version.
+
+        Mapping
+        -------
+        raw['text']        -> normalised['content']   (primary memory text)
+        raw['context']     -> normalised['metadata']['context']
+        raw['document_id'] -> normalised['metadata']['document_id']
+        raw['type']        -> normalised['metadata']['type']
+        raw['id']          -> normalised['metadata']['id']
+        raw['mentioned_at']-> normalised['metadata']['mentioned_at']
+        raw['entities']    -> normalised['metadata']['entities']
+        raw['score']       -> normalised['score']  (if Hindsight ever adds it)
+        """
+        # Hindsight stores the memory body in 'text'.
+        # Fall back through 'content' / 'fact' / 'memory' / 'observation'
+        # so the mapping stays robust if Hindsight changes field names.
+        content: str = (
+            raw.get("text")
+            or raw.get("content")
+            or raw.get("fact")
+            or raw.get("memory")
+            or raw.get("observation")
+            or ""
+        )
+
+        # Score: Hindsight hybrid retrieval doesn't currently expose a
+        # per-result numeric score in the recall response.
+        score: Optional[float] = raw.get("score") or raw.get("relevance_score")
+        if score is not None:
+            try:
+                score = float(score)
+            except (TypeError, ValueError):
+                score = None
+
+        # Collect supplementary metadata fields
+        metadata: Dict[str, Any] = {}
+        for field in (
+            "context", "document_id", "type", "id",
+            "mentioned_at", "occurred_start", "occurred_end",
+            "entities", "tags", "chunk_id",
+        ):
+            value = raw.get(field)
+            if value is not None:
+                metadata[field] = value
+
+        return {
+            "content": content,
+            "score": score,
+            "metadata": metadata if metadata else {},
+        }
 
     async def retain(self, content: str, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """

@@ -76,12 +76,22 @@ class PriorArtResearchAgent:
         # ----------------------------------------------------------------
         recalled_memories = await self._memory.recall(query, top_k=5)
         recalled_context: List[RecalledContext] = []
-        for mem in recalled_memories:
+        for i, mem in enumerate(recalled_memories):
+            content  = mem.get("content", "")
+            score    = mem.get("score")     # None if Hindsight doesn't expose it
+            metadata = mem.get("metadata") or {}
+            logger.info(
+                "Recalled memory [%d]: content_len=%d  score=%s  metadata_keys=%s",
+                i,
+                len(content),
+                score,
+                list(metadata.keys()),
+            )
             recalled_context.append(
                 RecalledContext(
-                    content=mem.get("content", ""),
-                    score=mem.get("score"),
-                    metadata=mem.get("metadata"),
+                    content=content,
+                    score=score,
+                    metadata=metadata if metadata else None,
                 )
             )
 
@@ -104,7 +114,7 @@ class PriorArtResearchAgent:
         )
         logger.info("MCP search returned %d candidate patents", len(candidate_patents))
 
-                # ----------------------------------------------------------------
+        # ----------------------------------------------------------------
         # Steps 4 & 5 — Evaluate each patent and persist findings
         # ----------------------------------------------------------------
         findings: List[PatentFinding] = []
@@ -112,7 +122,11 @@ class PriorArtResearchAgent:
 
         # Evaluate patents concurrently (bounded by MCP rate limit on search)
         eval_tasks = [
-            self._evaluate_patent(query=query, patent=p)
+            self._evaluate_patent(
+                query=query,
+                patent=p,
+                prior_research=self._matching_prior_research(p, recalled_context),
+            )
             for p in candidate_patents
         ]
         finding_results = await asyncio.gather(*eval_tasks, return_exceptions=True)
@@ -211,7 +225,9 @@ class PriorArtResearchAgent:
 
         return patents if isinstance(patents, list) else []
 
-    async def _evaluate_patent(self, query: str, patent: dict) -> PatentFinding:
+    async def _evaluate_patent(
+        self, query: str, patent: dict, prior_research: str = ""
+    ) -> PatentFinding:
         """Run the LLM evaluation for a single patent dict."""
         evaluation = await self._evaluator.evaluate(
             query=query,
@@ -223,6 +239,9 @@ class PriorArtResearchAgent:
             cpc_codes=patent.get("cpc_codes", []),
             filing_date=patent.get("filing_date"),
             grant_date=patent.get("grant_date"),
+            publication_date=patent.get("publication_date"),
+            source=patent.get("source"),
+            prior_research=prior_research,
         )
 
         return PatentFinding(
@@ -233,7 +252,24 @@ class PriorArtResearchAgent:
             cpc_codes=patent.get("cpc_codes", []),
             filing_date=patent.get("filing_date"),
             grant_date=patent.get("grant_date"),
+            publication_date=patent.get("publication_date"),
+            source=patent.get("source"),
             verdict=evaluation["verdict"],
             confidence=evaluation["confidence"],
             reasoning=evaluation["reasoning"],
         )
+
+    @staticmethod
+    def _matching_prior_research(patent: dict, memories: List[RecalledContext]) -> str:
+        patent_id = "".join(
+            char for char in str(patent.get("patent_id", "")).casefold() if char.isalnum()
+        )
+        if not patent_id:
+            return ""
+        matches = []
+        for memory in memories:
+            content = memory.content or ""
+            canonical_content = "".join(char for char in content.casefold() if char.isalnum())
+            if patent_id in canonical_content:
+                matches.append(content)
+        return "\n\n".join(matches)[:4000]

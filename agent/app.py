@@ -77,7 +77,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Patent Prior-Art Research Agent",
     description=(
-        "An AI agent that searches USPTO patents, evaluates prior-art relevance "
+        "An AI agent that searches public patent records, evaluates prior-art relevance "
         "using Groq LLM reasoning, and remembers past research via Hindsight memory."
     ),
     version="1.0.0",
@@ -130,7 +130,7 @@ async def health_check():
     summary="Run patent prior-art research",
     description=(
         "Accepts a research query, checks Hindsight for prior research, "
-        "searches PatentsView for candidate patents, evaluates each via Groq LLM, "
+        "searches Google Patents and the local development corpus for candidates, evaluates each via Groq LLM, "
         "stores findings in Hindsight, and returns a structured result."
     ),
 )
